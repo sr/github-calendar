@@ -1,16 +1,6 @@
-require "test/unit"
-
-require "rubygems"
-require "context"
-require "matchy"
-
-require File.dirname(__FILE__) + "/../lib/github_calendar"
+require File.dirname(__FILE__) + "/test_helper"
 
 class GitHubCalendarTest < Test::Unit::TestCase
-  def fixture(login)
-    File.read(File.dirname(__FILE__) + "/fixtures/#{login}.atom")
-  end
-
   before(:each) do
     @feed = Atom::Feed.new(fixture(:sr))
   end
