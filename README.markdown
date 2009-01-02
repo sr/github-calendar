@@ -1,7 +1,9 @@
 github-calendar
 ===============
 
-Web service that converts [GitHub][]'s activity feeds onto [iCal][].
+Web service [1] that converts [GitHub][]'s activity feeds into [iCal][].
+
+[1]: Probably using Sinatra, maybe the hoboken
 
 Example
 -------
