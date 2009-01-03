@@ -6,6 +6,7 @@ require "icalendar"
 require "dm-core"
 require "dm-types"
 require "dm-validations"
+require "dm-aggregates"
 require "dm-timestamps"
 
 require "open-uri"
@@ -25,9 +26,9 @@ module GitHubCalendar
     include DataMapper::Resource
 
     property :id,       Serial
-    property :uri,      URI
-    property :etag,     Text
-    property :content,  Text
+    property :uri,      URI,    :nullable => false
+    property :etag,     String, :nullable => false
+    property :content,  Text,   :nullable => false
   end
 
   class App < Sinatra::Base
