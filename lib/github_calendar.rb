@@ -29,6 +29,12 @@ module GitHubCalendar
     property :uri,      URI,    :nullable => false
     property :etag,     String, :nullable => false
     property :content,  Text,   :nullable => false
+
+    validates_with_method :uri, :method => :github_public_feed?
+
+    def github_public_feed?
+      uri && uri.host == "github.com" && uri.path =~ /^\/\w+\.atom/
+    end
   end
 
   class App < Sinatra::Base

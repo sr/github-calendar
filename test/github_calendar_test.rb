@@ -48,6 +48,12 @@ class GitHubCalendarTest < Test::Unit::TestCase
         GitHubCalendar::Feed.gen(:content => nil).should_not be_valid
       end.should_not change(GitHubCalendar::Feed, :count)
     end
+
+    it "requires URI to be a public feed from GitHub (for now)" do
+      lambda do
+        GitHubCalendar::Feed.gen(:uri => "http://example.org").should_not be_valid
+      end.should_not change(GitHubCalendar::Feed, :count)
+    end
   end
 
   it "finds 7 events" do
