@@ -1,23 +1,31 @@
 github-calendar
 ===============
 
-Web service [1] that converts [GitHub][]'s activity feeds into [iCal][].
+Web service that converts [GitHub][]'s activity feeds into [iCal][].
 
-[1]: Probably using Sinatra, maybe the hoboken
+Plan
+----
+
+The plan is to support more Code Hubs, such as [gitorious][] and [bitbucket][] and
+to become the main data source of [Calendar About Nothing][CAN].
+
+[gitorious]: http://gitorious.org
+[bitbucket]: http://www.bitbucket.org
+[CAN]: http://calendaraboutnothing.com
 
 Example
 -------
 
     $ curl http://github-calendar.com/~sr
-    # iCal feed created from <http://github.com/sr.atom> with commits as events
-    # When this is done, of course :-) (fork me!)
+    # iCal feed converted from <http://github.com/sr.atom> with commits as events
+    # Well, not yet. Fork me!
 
 License
 -------
 
 (The MIT License)
 
-Copyright (c) Y  [Simon Rozet][sr]
+Copyright (c) 2008 [Simon Rozet][sr]
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
