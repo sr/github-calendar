@@ -6,6 +6,7 @@ require "sinatra/test"
 require "rubygems"
 require "context"
 require "matchy"
+require "mocha"
 
 module TestHelper
   def fixture(login)
