@@ -6,6 +6,17 @@ class GitHubCalendarTest < Test::Unit::TestCase
   end
 
   it "finds 7 events" do
-    GitHubCalendar.find_commits(@feed).length.should == 7
+    commits = GitHubCalendar.find_commits(@feed)
+    commits.length.should == 7
+    commits.first.title.should == "sr committed to foca/integrity"
+  end
+
+  test "the web app" do
+    @app = GitHubCalendar::App
+
+    get "/~sr.ical"
+    @response.status.should == 200
+    @response["Content-Type"].should == "text/calendar"
+    @response.body.should =~ /VCALENDAR/
   end
 end

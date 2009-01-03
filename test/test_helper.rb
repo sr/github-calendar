@@ -1,10 +1,11 @@
 require "test/unit"
 
+require File.dirname(__FILE__) + "/../lib/github_calendar"
+require "sinatra/test"
+
 require "rubygems"
 require "context"
 require "matchy"
-
-require File.dirname(__FILE__) + "/../lib/github_calendar"
 
 module TestHelper
   def fixture(login)
@@ -14,4 +15,5 @@ end
 
 class Test::Unit::TestCase
   include TestHelper
+  include Sinatra::Test
 end
