@@ -8,6 +8,8 @@ require "context"
 require "matchy"
 require "mocha"
 
+require File.dirname(__FILE__) + "/helpers/expectations"
+
 module TestHelper
   def fixture(login)
     File.read(File.dirname(__FILE__) + "/fixtures/#{login}.atom")
