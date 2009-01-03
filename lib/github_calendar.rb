@@ -3,6 +3,10 @@ $:.unshift "#{__DIR__}/github_calendar", *Dir["#{__DIR__}/../vendor/**/lib"].to_
 
 require "rubygems"
 require "icalendar"
+require "dm-core"
+require "dm-types"
+require "dm-validations"
+require "dm-timestamps"
 
 require "open-uri"
 
@@ -15,6 +19,15 @@ module GitHubCalendar
 
   def self.find_commits(feed)
     feed.entries.select { |entry| entry.id.start_with?(CommitEvent) }
+  end
+
+  class Feed
+    include DataMapper::Resource
+
+    property :id,       Serial
+    property :uri,      URI
+    property :etag,     Text
+    property :content,  Text
   end
 
   class App < Sinatra::Base
