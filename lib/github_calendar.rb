@@ -30,20 +30,14 @@ module GitHubCalendar
 
     property :id,       Serial
     property :uri,      URI,    :nullable => false
-    property :etag,     String #:nullable => false
-    property :content,  Text   #:nullable => false
+    property :etag,     String #FIXME :nullable => false
+    property :content,  Text   #FIXME :nullable => false
 
     # FIXME: validates_with_method :uri, :method => :github_public_feed?
 
-    before :create, :fetch_feed
+    before :create, :fetch_feed_first_time
 
     private
-      def fetch_feed
-        throw :halt unless new_record? && valid_uri?
-
-        fetch_feed_first_time
-      end
-
       def fetch_feed_first_time
         response = Net::HTTP.start(uri.host, uri.port || 80) { |http| http.get(uri.path) }
 

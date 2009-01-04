@@ -62,12 +62,24 @@ class FeedTest < Test::Unit::TestCase
     end
   end
 
-  it "retrieve feed content and etag on create" do
-    lambda do
-      feed = GitHubCalendar::Feed.create(:uri => test_server_uri.join("sr.atom"))
-      feed.uri.to_s.should == "http://0.0.0.0:3000/sr.atom"
-      feed.etag.should     == %q{"bf1532b0add9f28c33e6651a9896691e"}
-      feed.content.should  == feed_for(:sr)
-    end.should change(GitHubCalendar::Feed, :count).by(1)
+  context "on create" do
+    it "retrieve feed content and etag" do
+      lambda do
+        feed = GitHubCalendar::Feed.create(:uri => test_server_uri.join("sr.atom"))
+        feed.uri.to_s.should == "http://0.0.0.0:3000/sr.atom"
+        feed.etag.should     == %q{"bf1532b0add9f28c33e6651a9896691e"}
+        feed.content.should  == feed_for(:sr)
+        feed.should be_valid
+      end.should change(GitHubCalendar::Feed, :count).by(1)
+    end
+
+    it "do not save if the feed can't be retrieved" do
+      lambda do
+        feed = GitHubCalendar::Feed.create(:uri => test_server_uri.join("not-found.atom"))
+        feed.uri.to_s.should == "http://0.0.0.0:3000/not-found.atom"
+        feed.etag.should be_nil
+        feed.content.should be_nil
+      end.should_not change(GitHubCalendar::Feed, :count)
+    end
   end
 end
