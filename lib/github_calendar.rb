@@ -10,6 +10,7 @@ require "dm-aggregates"
 require "dm-timestamps"
 
 require "open-uri"
+require "net/http"
 
 # vendored
 require "atom"
@@ -27,14 +28,36 @@ module GitHubCalendar
 
     property :id,       Serial
     property :uri,      URI,    :nullable => false
-    property :etag,     String, :nullable => false
-    property :content,  Text,   :nullable => false
+    property :etag,     String #:nullable => false
+    property :content,  Text   #:nullable => false
 
-    validates_with_method :uri, :method => :github_public_feed?
+    # FIXME: validates_with_method :uri, :method => :github_public_feed?
 
-    def github_public_feed?
-      uri && uri.host == "github.com" && uri.path =~ /^\/\w+\.atom/
-    end
+    before :create, :fetch_feed
+
+    private
+      def fetch_feed
+        throw :halt unless new_record? && valid_uri?
+
+        fetch_feed_first_time
+      end
+
+      def fetch_feed_first_time
+        response = Net::HTTP.start(uri.host, uri.port || 80) { |http| http.get(uri.path) }
+
+        throw :halt unless %w(200 304).include?(response.code)
+
+        self.etag     = response["ETag"]
+        self.content  = response.body
+      end
+
+      def valid_uri?
+        uri && uri.host && uri.path
+      end
+
+      def github_public_feed?
+        uri && uri.host == "github.com" && uri.path =~ /^\/\w+\.atom/
+      end
   end
 
   class App < Sinatra::Base

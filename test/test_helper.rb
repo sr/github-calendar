@@ -6,6 +6,7 @@ require "sinatra/test"
 require "rubygems"
 require "context"
 require "matchy"
+require "pending"
 require "mocha"
 
 require File.dirname(__FILE__) + "/helpers/expectations"
