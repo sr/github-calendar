@@ -16,6 +16,8 @@ require "net/http"
 require "atom"
 require "sinatra/base"
 
+require "core_ext"
+
 module GitHubCalendar
   CommitEvent = "tag:github.com,2008:CommitEvent".freeze
 
