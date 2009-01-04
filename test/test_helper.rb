@@ -17,9 +17,14 @@ module TestHelper
     DataMapper.auto_migrate!
   end
 
-  def fixture(login)
-    File.read(File.dirname(__FILE__) + "/helpers/fixtures/#{login}.atom")
+  def test_server_uri
+    @uri ||= Addressable::URI.parse("http://0.0.0.0:3000")
   end
+end
+
+# because its needed in fixtures.rb
+def feed_for(login)
+  File.read(File.dirname(__FILE__) + "/helpers/fixtures/#{login}.atom")
 end
 
 class Test::Unit::TestCase

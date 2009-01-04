@@ -58,7 +58,14 @@ module GitHubCalendar
     end
 
     def fetch_feed
+      unless feed = find_feed
+        GitHubCalendar::Feed.create(:uri => "http://github.com/#{params[:user]}.atom")
+      end
       @feed ||= Atom::Feed.new(open("http://github.com/#{params[:user]}.atom").read)
+    end
+
+    def find_feed
+      GitHubCalendar::Feed.first(:uri => "http://github.com/#{params[:user]}.atom")
     end
   end
 end
