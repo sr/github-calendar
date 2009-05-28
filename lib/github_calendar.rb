@@ -2,7 +2,6 @@ __DIR__ = File.dirname(__FILE__)
 $:.unshift "#{__DIR__}/github_calendar", *Dir["#{__DIR__}/../vendor/**/lib"].to_a
 
 require "icalendar"
-require "ruby-debug"
 require "em-http"
 require "memcache"
 
