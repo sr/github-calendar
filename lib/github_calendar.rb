@@ -1,90 +1,86 @@
 __DIR__ = File.dirname(__FILE__)
 $:.unshift "#{__DIR__}/github_calendar", *Dir["#{__DIR__}/../vendor/**/lib"].to_a
 
-require "rubygems"
 require "icalendar"
-require "dm-core"
-require "dm-types"
-require "dm-validations"
-require "dm-aggregates"
-require "dm-timestamps"
+require "ruby-debug"
+require "em-http"
+require "memcache"
 
-require "open-uri"
-require "net/http"
+require "digest/sha1"
 
-# vendored
-require "atom"
-require "sinatra/base"
-
+require "atom" # vendored
 require "core_ext"
 
-module GitHubCalendar
-  CommitEvent = "tag:github.com,2008:CommitEvent".freeze
 
-  def self.find_commits(feed)
-    feed.entries.select { |entry| entry.id.start_with?(CommitEvent) }
+module GitHubCalendar
+  def self.cache
+    @@cache ||= MemCache.new("0.0.0.0:11211")
   end
 
   class Feed
-    include DataMapper::Resource
+    attr_reader :uri, :expiry
 
-    property :id,       Serial
-    property :uri,      URI,    :nullable => false
-    property :etag,     String #FIXME :nullable => false
-    property :content,  Text   #FIXME :nullable => false
+    def initialize(uri, expiry=3600)
+      @uri    = URI(uri)
+      @expiry = expiry
 
-    # FIXME: validates_with_method :uri, :method => :github_public_feed?
+      EM.defer(proc{fetch_and_cache}) unless cached?
+    end
 
-    before :create, :fetch_feed_first_time
+    def cached
+      @cached ||= GitHubCalendar.cache.get(uri.to_s)
+    end
+    alias_method :cached?, :cached
+
+    def to_etag
+      @etag ||= Digest::SHA1.hexdigest(to_ical)
+    end
+
+    def to_ical
+      @ical ||= begin
+        calendar = Icalendar::Calendar.new
+
+        feed.entries.each { |commit|
+          calendar.event do
+            dtstamp commit.published
+            dtstart commit.published
+            dtend   commit.published
+
+            summary     commit.title.to_s
+            description commit.content.value.to_s
+            uid         commit.id
+            klass       "PUBLIC"
+          end
+        }
+
+        calendar.to_ical
+      end
+    end
 
     private
-      def fetch_feed_first_time
-        response = Net::HTTP.start(uri.host, uri.port || 80) { |http| http.get(uri.path) }
-
-        throw :halt unless %w(200 304).include?(response.code)
-
-        self.etag     = response["ETag"]
-        self.content  = response.body
+      def feed
+        @feed ||= Atom::Feed.new(cached || "")
       end
 
-      def valid_uri?
-        uri && uri.host && uri.path
-      end
-
-      def github_public_feed?
-        uri && uri.host == "github.com" && uri.path =~ /^\/\w+\.atom/
+      def fetch_and_cache
+        http = EventMachine::HttpRequest.new(uri).get
+        http.callback {
+          GitHubCalendar.cache.set(uri.to_s, http.response, expiry)
+        }
       end
   end
 
   class App < Sinatra::Base
     get "/~:user.ical" do
-      calendar = Icalendar::Calendar.new
-      GitHubCalendar.find_commits(fetch_feed).each do |commit|
-        calendar.event do
-          dtstamp commit.published
-          dtstart commit.published
-          dtend   commit.published
-
-          summary     commit.title.to_s
-          description commit.content.to_s
-          uid         commit.id
-          klass       "PUBLIC"
-        end
-      end
+      halt(202) unless feed.cached?
 
       content_type "text/calendar"
-      body         calendar.to_ical
+      etag   feed.to_etag
+      body   feed.to_ical
     end
 
-    def fetch_feed
-      unless feed = find_feed
-        GitHubCalendar::Feed.create(:uri => "http://github.com/#{params[:user]}.atom")
-      end
-      @feed ||= Atom::Feed.new(open("http://github.com/#{params[:user]}.atom").read)
-    end
-
-    def find_feed
-      GitHubCalendar::Feed.first(:uri => "http://github.com/#{params[:user]}.atom")
+    def feed
+      @feed ||= Feed.new("http://github.com/sr.atom")
     end
   end
 end
