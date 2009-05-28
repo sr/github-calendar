@@ -1,0 +1,4 @@
+sinatra
+memcache-client
+icalendar
+igrigorik-em-http-request --source http://gems.github.com
